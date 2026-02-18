@@ -2,6 +2,7 @@ import {
     PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from "recharts";
 import { useMemo } from "react";
+import { formatCurrency } from "../utils/format";
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 
 const COLORS = [
@@ -15,7 +16,7 @@ const CustomTooltip = ({ active, payload }) => {
             <div className="bg-[var(--modal-bg)] border border-border-subtle p-3 rounded-xl shadow-xl">
                 <p className="text-accent-primary text-xs font-semibold uppercase tracking-wider mb-1">{payload[0].name}</p>
                 <p className="font-mono text-text-primary text-sm font-bold">
-                    ${Number(payload[0].value).toFixed(2)}
+                    {formatCurrency(Number(payload[0].value))}
                 </p>
             </div>
         );
