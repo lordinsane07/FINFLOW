@@ -413,6 +413,12 @@ body {
   cursor: pointer;
 }
 
+[data-theme="light"] ::-webkit-calendar-picker-indicator {
+  filter: invert(0);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
 /* ═══════════════════════════════════════════════
    LEDGER LINE TEXTURE (for transaction area)
    ═══════════════════════════════════════════════ */
