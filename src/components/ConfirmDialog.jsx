@@ -1,6 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
-export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message }) {
+export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete" }) {
     if (!isOpen) return null;
 
     return (
@@ -28,7 +28,7 @@ export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, messa
                         onClick={() => { onConfirm(); onClose(); }}
                         className="flex-1 py-2.5 rounded-btn bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-500/25 hover:bg-rose-600 transition-all"
                     >
-                        Delete
+                        {confirmText}
                     </button>
                 </div>
             </div>

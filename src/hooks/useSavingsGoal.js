@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
+import { subscribeSavingsGoal, saveSavingsGoal } from "../services/savingsGoalService";
 
 export function useSavingsGoal() {
     const { currentUser } = useAuth();
@@ -15,14 +14,8 @@ export function useSavingsGoal() {
             return;
         }
 
-        const goalRef = doc(db, "users", currentUser.uid, "settings", "savingsGoal");
-
-        const unsubscribe = onSnapshot(goalRef, (docSnap) => {
-            if (docSnap.exists()) {
-                setGoal(docSnap.data().target || 0);
-            } else {
-                setGoal(0);
-            }
+        const unsubscribe = subscribeSavingsGoal(currentUser.uid, (target) => {
+            setGoal(target);
             setLoading(false);
         });
 
@@ -31,8 +24,7 @@ export function useSavingsGoal() {
 
     const updateGoal = async (newTarget) => {
         if (!currentUser) return;
-        const goalRef = doc(db, "users", currentUser.uid, "settings", "savingsGoal");
-        await setDoc(goalRef, { target: parseFloat(newTarget) }, { merge: true });
+        await saveSavingsGoal(currentUser.uid, newTarget);
     };
 
     return { goal, loading, updateGoal };

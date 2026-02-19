@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LogOut, User as UserIcon } from "lucide-react";
+import { Menu, X, LogOut, User as UserIcon, RotateCcw } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
+import { resetAllData } from "../services/resetService";
 import ThemeToggle from "./ThemeToggle";
+import ConfirmDialog from "./ConfirmDialog";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [showResetConfirm, setShowResetConfirm] = useState(false);
+    const [resetting, setResetting] = useState(false);
     const { currentUser, logout } = useAuth();
+    const { showToast } = useToast();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -16,6 +22,20 @@ export default function Navbar() {
             navigate("/login");
         } catch (error) {
             console.error("Failed to log out", error);
+        }
+    };
+
+    const handleResetData = async () => {
+        if (!currentUser) return;
+        try {
+            setResetting(true);
+            await resetAllData(currentUser.uid);
+            showToast("All data has been reset successfully", "success");
+        } catch (error) {
+            console.error("Failed to reset data", error);
+            showToast("Failed to reset data", "error");
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -63,6 +83,13 @@ export default function Navbar() {
                                 <div className="w-9 h-9 rounded-full bg-bg-card border border-border-accent flex items-center justify-center">
                                     <UserIcon size={16} className="text-accent-primary" />
                                 </div>
+                                <button
+                                    onClick={() => setShowResetConfirm(true)}
+                                    className="p-2 text-text-muted hover:text-amber-400 transition-colors rounded-full hover:bg-amber-500/10"
+                                    title="Reset All Data"
+                                >
+                                    <RotateCcw size={17} />
+                                </button>
                                 <button
                                     onClick={handleLogout}
                                     className="p-2 text-text-muted hover:text-rose-400 transition-colors rounded-full hover:bg-rose-500/10"
@@ -124,6 +151,12 @@ export default function Navbar() {
                                     </div>
                                 </div>
                                 <button
+                                    onClick={() => { setShowResetConfirm(true); setIsOpen(false); }}
+                                    className="w-full py-3 rounded-xl bg-amber-500/10 text-amber-400 font-bold border border-amber-500/20 flex items-center justify-center gap-2 hover:bg-amber-500/20 transition-colors"
+                                >
+                                    <RotateCcw size={18} /> Reset All Data
+                                </button>
+                                <button
                                     onClick={() => { handleLogout(); setIsOpen(false); }}
                                     className="w-full py-3 rounded-xl bg-rose-500/10 text-rose-400 font-bold border border-rose-500/20 flex items-center justify-center gap-2 hover:bg-rose-500/20 transition-colors"
                                 >
@@ -142,6 +175,16 @@ export default function Navbar() {
                     </div>
                 </div>
             )}
+
+            {/* Reset Data Confirmation Dialog */}
+            <ConfirmDialog
+                isOpen={showResetConfirm}
+                onClose={() => setShowResetConfirm(false)}
+                onConfirm={handleResetData}
+                title="Reset All Data?"
+                message="This will permanently delete all your transactions and reset your budget & savings goal to zero. This action cannot be undone."
+                confirmText={resetting ? "Resetting..." : "Reset Everything"}
+            />
         </>
     );
 }

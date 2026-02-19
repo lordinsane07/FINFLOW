@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
 import { useTransactions } from "./useTransactions";
+import { subscribeBudget, saveBudget } from "../services/budgetService";
 import { startOfMonth, endOfMonth, isWithinInterval } from "date-fns";
 
 export function useBudget() {
@@ -11,19 +10,12 @@ export function useBudget() {
     const [budgetLimit, setBudgetLimit] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    // Fetch Budget Limit
+    // Fetch Budget Limit (via service layer)
     useEffect(() => {
         if (!currentUser) return;
 
-        // settings/budget is a document inside the user's collection
-        const budgetRef = doc(db, "users", currentUser.uid, "settings", "budget");
-
-        const unsubscribe = onSnapshot(budgetRef, (doc) => {
-            if (doc.exists()) {
-                setBudgetLimit(doc.data().limit || 0);
-            } else {
-                setBudgetLimit(0);
-            }
+        const unsubscribe = subscribeBudget(currentUser.uid, (limit) => {
+            setBudgetLimit(limit);
             setLoading(false);
         });
 
@@ -50,8 +42,7 @@ export function useBudget() {
 
     const updateBudget = async (newLimit) => {
         if (!currentUser) return;
-        const budgetRef = doc(db, "users", currentUser.uid, "settings", "budget");
-        await setDoc(budgetRef, { limit: parseFloat(newLimit) }, { merge: true });
+        await saveBudget(currentUser.uid, newLimit);
     };
 
     return { budgetLimit, spent, percentage, loading, updateBudget };
